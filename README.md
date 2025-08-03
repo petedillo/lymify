@@ -123,46 +123,64 @@ Edit the `.env` file to set your preferred configuration.
 
 ### Step 3: Build and Run with Docker Compose
 
-#### Option A: Build from Source
+#### Option A: Build from Source (Development)
+
+The application uses a multi-stage Docker setup with docker-compose:
 
 ```yaml
-version: '3.8'
 services:
   lymify:
     build:
       context: .
       dockerfile: docker/dev.Dockerfile
+      target: development
     ports:
       - "3300:3300"
+    environment:
+      - NODE_ENV=development
+      - PORT=3300
+      - SPOTDL_API_URL=http://spotdl:8800
     volumes:
       - ./music:/usr/src/app/music
-      - /var/run/docker.sock:/var/run/docker.sock
-      - ./.spotdl-cache:/app/.spotdl-cache
-    restart: unless-stopped
-```
-
-#### Option B: Use Pre-built Image
-
-For a quicker setup, you can use the pre-built image from the registry. Create `docker-compose.yml` with the following:
-
-```yaml
-version: '3.8'
-services:
-  lymify:
-    image: petedillo.com/lymify:latest
-    ports:
-      - "3300:3300"
-    volumes:
-      - ./music:/usr/src/app/music
-      - /var/run/docker.sock:/var/run/docker.sock
+      - .:/usr/src/app
+      - /usr/src/app/node_modules
     depends_on:
       - spotdl
 
   spotdl:
     image: spotdl/spotify-downloader:latest
-    entrypoint: ["python3", "-m", "spotdl", "web", "--host", "0.0.0.0", "--port", "8800"]
+    command: ["web", "--host", "0.0.0.0", "--port", "8800", "--keep-alive", "--web-use-output-dir"]
+    volumes:
+      - ./music:/music
+      - ./.spotdl-cache:/app/.spotdl-cache
+    restart: unless-stopped
+```
+
+#### Option B: Use Pre-built Image (Production)
+
+For a production deployment, you can use the pre-built image:
+
+```yaml
+services:
+  lymify:
+    build:
+      context: .
+      dockerfile: docker/prod.Dockerfile
+      target: production
     ports:
-      - "8800:8800"
+      - "3300:3300"
+    environment:
+      - NODE_ENV=production
+      - PORT=3300
+      - SPOTDL_API_URL=http://spotdl:8800
+    volumes:
+      - ./music:/usr/src/app/music
+    depends_on:
+      - spotdl
+
+  spotdl:
+    image: spotdl/spotify-downloader:latest
+    command: ["web", "--host", "0.0.0.0", "--port", "8800", "--keep-alive", "--web-use-output-dir"]
     volumes:
       - ./music:/music
       - ./.spotdl-cache:/app/.spotdl-cache
