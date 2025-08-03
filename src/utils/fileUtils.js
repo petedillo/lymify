@@ -1,4 +1,8 @@
-// File utilities
+/**
+ * File utilities for the Lymify application
+ * @module fileUtils
+ */
+
 const fs = require('fs');
 const path = require('path');
 
