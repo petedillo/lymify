@@ -1,4 +1,4 @@
-# Music Downloader
+# Lymify
 
 A containerized web application that allows users to download Spotify tracks through a simple web interface with real-time progress tracking using spotDL.
 
@@ -47,7 +47,7 @@ This application consists of two Docker containers managed by `docker-compose.ym
 ## Project Structure
 
 ```
-music-downloader/
+lymify/
 ├── music/                     # Shared directory for downloaded songs
 ├── public/
 │   ├── index.html           # Main page
@@ -66,8 +66,8 @@ music-downloader/
 ### Step 1: Create Project Directory
 
 ```bash
-mkdir music-downloader
-cd music-downloader
+mkdir lymify
+cd lymify
 mkdir -p music public
 ```
 
@@ -143,7 +143,7 @@ For implementation details, please refer to the files in the [public/](public/) 
 
 ```bash
 # Navigate to project directory
-cd music-downloader
+cd lymify
 
 # Build and start containers
 docker compose up --build
