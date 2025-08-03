@@ -1,0 +1,22 @@
+services:
+  webapp:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "3001:3000"
+    volumes:
+      - ./music:/usr/src/app/music
+      - /var/run/docker.sock:/var/run/docker.sock
+    depends_on:
+      - spotdl
+
+  spotdl:
+    image: spotdl/spotify-downloader:latest
+    command: ["web", "--host", "0.0.0.0", "--port", "8800", "--keep-alive", "--web-use-output-dir"]
+    ports:
+      - "8800:8800"
+    volumes:
+      - ./music:/music
+      - ./.spotdl-cache:/app/.spotdl-cache
+    restart: unless-stopped

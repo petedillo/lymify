@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Download Status</title>
+    <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+    <h1>Download Status</h1>
+    <div id="status-updates"></div>
+    <a href="/">Back to Home</a>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const downloadId = urlParams.get('id');
+        const socket = io({ query: { id: downloadId } });
+
+        const statusUpdates = document.getElementById('status-updates');
+
+        socket.on('statusUpdate', (data) => {
+            const p = document.createElement('p');
+            p.textContent = data.message;
+            statusUpdates.appendChild(p);
+        });
+    </script>
+</body>
+</html>
