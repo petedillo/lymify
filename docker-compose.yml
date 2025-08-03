@@ -4,10 +4,12 @@ services:
       context: .
       dockerfile: Dockerfile
     ports:
-      - "3001:3000"
+      - "3300:3300"
+    environment:
+      - PORT=3300
+      - SPOTDL_API_URL=http://spotdl:8800
     volumes:
       - ./music:/usr/src/app/music
-      - /var/run/docker.sock:/var/run/docker.sock
     depends_on:
       - spotdl
 

@@ -15,9 +15,9 @@ const io = new Server(server, {
         methods: ["GET", "POST"]
     }
 });
-const docker = new Docker({ socketPath: '/var/run/docker.sock' });
 
-const port = 3000;
+const port = process.env.PORT || 3000;
+const spotdlApiUrl = process.env.SPOTDL_API_URL || 'http://spotdl:8800';
 const musicDir = path.join(__dirname, 'music');
 
 app.use(express.urlencoded({ extended: true }));
@@ -45,7 +45,7 @@ app.post('/download', async (req, res) => {
         const clientId = 'webapp-' + Date.now();
         
         // Create a WebSocket connection to register the client
-        const ws = new WebSocket(`http://music-downloader-spotdl-1:8800/api/ws?client_id=${clientId}`);
+        const ws = new WebSocket(`${spotdlApiUrl.replace('http', 'ws')}/api/ws?client_id=${clientId}`);
         
         ws.on('message', (data) => {
             const progressData = JSON.parse(data);
@@ -57,7 +57,7 @@ app.post('/download', async (req, res) => {
 
         ws.on('open', async () => {
             // Send request to spotdl web API once WebSocket is open
-            const response = await fetch(`http://music-downloader-spotdl-1:8800/api/download/url?url=${encodeURIComponent(trackUrl)}&client_id=${clientId}`, {
+            const response = await fetch(`${spotdlApiUrl}/api/download/url?url=${encodeURIComponent(trackUrl)}&client_id=${clientId}`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
             });

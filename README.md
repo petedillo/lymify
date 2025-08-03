@@ -61,6 +61,15 @@ lymify/
 └── README.md                # This file
 ```
 
+## Configuration
+
+The application can be configured using the following environment variables. You can set them in your `docker-compose.yml` file or directly in your shell.
+
+| Variable         | Description                                     | Default                  |
+|------------------|-------------------------------------------------|--------------------------|
+| `PORT`           | The port on which the web server will listen.     | `3000`                   |
+| `SPOTDL_API_URL` | The full URL for the spotDL container's API. | `http://spotdl:8800`     |
+
 ## Setup Instructions
 
 ### Step 1: Create Project Directory
