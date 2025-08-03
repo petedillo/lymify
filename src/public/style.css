@@ -70,6 +70,11 @@
       overflow-x: hidden;
   }
   
+  .container {
+      max-width: 100%;
+      overflow-x: hidden;
+  }
+  
   /* Animated background particles */
   body::before {
       content: '';
@@ -194,6 +199,10 @@
       transition: all 0.3s ease;
       position: relative;
       overflow: hidden;
+  }
+  
+  main {
+      overflow-x: hidden;
   }
   
   a::before {
@@ -436,6 +445,7 @@
       margin: 0 auto;
       max-height: 400px;
       overflow-y: auto;
+      overflow-x: hidden;
       scrollbar-width: thin;
       scrollbar-color: var(--soft-lime-glow) var(--warm-stone);
   }
@@ -471,7 +481,7 @@
   
   #song-list li:hover {
       background: rgba(54, 51, 48, 0.6);
-      transform: translateY(-5px) translateX(10px) rotateY(2deg);
+      transform: translateY(-3px) translateX(3px) rotateY(0.5deg);
       box-shadow: 
           0 10px 25px rgba(0, 0, 0, 0.3),
           0 0 20px rgba(163, 230, 53, 0.2);
