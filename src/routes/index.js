@@ -4,12 +4,9 @@
  */
 
 const express = require('express');
-const path = require('path');
-const fs = require('fs');
 const { handleDownload, getSongs } = require('../controllers/downloadController');
 
 const router = express.Router();
-const musicDir = path.join(__dirname, '..', 'music');
 
 /**
  * GET / - Home page route

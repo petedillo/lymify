@@ -3,14 +3,7 @@
  * @module downloadController
  */
 
-const fs = require('fs');
-const path = require('path');
-const WebSocket = require('ws');
-const fetch = require('node-fetch');
-const config = require('../config');
 const logger = require('../utils/logger');
-
-const spotdlApiUrl = config.spotdlApiUrl;
 const musicDir = '/usr/src/app/music';
 
 /**

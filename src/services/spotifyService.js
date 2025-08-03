@@ -9,8 +9,6 @@ const config = require('../config');
 const logger = require('../utils/logger');
 const { emitStatusUpdate } = require('../utils/socketUtils');
 
-const spotdlApiUrl = config.spotdlApiUrl;
-
 /**
  * Download track from Spotify
  * @param {string} trackUrl - The URL of the track to download

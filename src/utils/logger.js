@@ -4,8 +4,6 @@
  * @module logger
  */
 
-const config = require('../config');
-
 /**
  * Check if the application is running in development mode
  * @returns {boolean} True if in development mode, false otherwise
