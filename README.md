@@ -58,7 +58,8 @@ lymify/
 │   ├── services/            # Business logic
 │   │   └── spotifyService.js      # Spotify download service
 │   ├── utils/               # Helper functions
-│   │   └── fileUtils.js     # File utilities
+│   │   ├── fileUtils.js     # File utilities
+│   │   └── logger.js        # Logger utility
 │   ├── public/              # Static files
 │   │   ├── css/             # CSS styles
 │   │   ├── js/              # JavaScript files
@@ -70,7 +71,8 @@ lymify/
 │   └── prod.Dockerfile      # Production Dockerfile
 ├── music/                   # Shared directory for downloaded songs
 ├── tests/                   # Test files
-│   └── server.test.js       # Server tests
+│   ├── server.test.js       # Server tests
+│   └── logger.test.js       # Logger tests
 ├── .spotdl-cache/           # Cache for spotdl
 ├── .env.example             # Environment variables example
 ├── .gitignore               # Git ignore file
@@ -93,21 +95,26 @@ You can also create a `.env` file in the root directory based on the `.env.examp
 
 ## Setup Instructions
 
-### Step 1: Create Project Directory
+### Step 1: Clone the Repository
 
 ```bash
-mkdir lymify
+git clone https://github.com/petedillo/lymify.git
 cd lymify
-mkdir -p music public
 ```
 
-### Step 2: Create Docker Compose Configuration
+### Step 2: Configure Environment Variables
 
-You have two options for setting up the `docker-compose.yml` file.
+Create a `.env` file based on `.env.example`:
+
+```bash
+cp .env.example .env
+```
+
+Edit the `.env` file to set your preferred configuration.
+
+### Step 3: Build and Run with Docker Compose
 
 #### Option A: Build from Source
-
-Use this option if you plan to modify the code. Create a `docker-compose.yml` file with the following content:
 
 ```yaml
 version: '3.8'
@@ -116,26 +123,11 @@ services:
     build:
       context: .
       dockerfile: docker/dev.Dockerfile
-      target: development
     ports:
-      - "3300:3300"
-    environment:
-      - NODE_ENV=development
-      - PORT=3300
-      - SPOTDL_API_URL=http://spotdl:8800
+      - "3001:3000"
     volumes:
       - ./music:/usr/src/app/music
-      - .:/usr/src/app
-      - /usr/src/app/node_modules
-    depends_on:
-      - spotdl
-    command: ["npx", "nodemon", "src/server.js"]
-
-  spotdl:
-    image: spotdl/spotify-downloader:latest
-    command: ["web", "--host", "0.0.0.0", "--port", "8800", "--keep-alive", "--web-use-output-dir"]
-    volumes:
-      - ./music:/music
+      - /var/run/docker.sock:/var/run/docker.sock
       - ./.spotdl-cache:/app/.spotdl-cache
     restart: unless-stopped
 ```
@@ -159,7 +151,7 @@ services:
 
   spotdl:
     image: spotdl/spotify-downloader:latest
-    command: web --host 0.0.0.0 --keep-alive
+    entrypoint: ["python3", "-m", "spotdl", "web", "--host", "0.0.0.0", "--port", "8800"]
     ports:
       - "8800:8800"
     volumes:
@@ -168,23 +160,96 @@ services:
     restart: unless-stopped
 ```
 
-### Step 3: Dockerfile for Webapp
+Then run:
 
-The Dockerfile for the webapp is defined in `docker/dev.Dockerfile` and `docker/prod.Dockerfile`. These files set up the Node.js environment and install all necessary dependencies.
+```bash
+docker compose up -d
+```
 
-For details, please refer to the [docker/dev.Dockerfile](docker/dev.Dockerfile) and [docker/prod.Dockerfile](docker/prod.Dockerfile) files.
-### Step 4: Package Configuration
+## Development
 
-The package configuration is defined in `package.json`. This file includes all the necessary dependencies for the web application:
+### Local Development
 
-- Express.js for the web server
-- Dockerode for Docker container management
-- Socket.IO for real-time communication
-- Node-fetch for making HTTP requests
+The webapp can be developed locally by running the Express.js server directly:
 
-For details, please refer to the [package.json](package.json) file.
+```bash
+# Install dependencies
+npm install
 
-### Step 5: Express.js Application
+# Run the server in development mode
+npm run dev
+```
+
+Note that the spotdl container must be running for downloads to work. You can start it with:
+
+```bash
+docker compose up -d spotdl
+```
+
+### Logger Utility
+
+The application now includes a built-in logger utility (`src/utils/logger.js`) that:
+
+- Is enabled in development mode but disabled in production
+- Provides different log levels: `info`, `warn`, `error`, and `debug`
+- Can be controlled using the `NODE_ENV` environment variable
+
+To use the logger in your code:
+
+```javascript
+const logger = require('./utils/logger');
+
+logger.info('Information message');
+logger.warn('Warning message');
+logger.error('Error message');
+logger.debug('Debug message');
+```
+
+### Testing
+
+The application includes unit tests for the logger utility:
+
+```bash
+# Run all tests
+npm test
+
+# Run tests in watch mode
+npm run test:watch
+```
+
+### Project Structure Details
+
+#### Step 1: Configuration
+
+The application configuration is defined in `src/config/index.js`. This file handles environment variables and provides default values.
+
+For details, please refer to the [src/config/index.js](src/config/index.js) file.
+
+#### Step 2: Route Controllers
+
+Route controllers handle the business logic for different routes. The main controller is `downloadController.js` which manages the download process.
+
+For implementation details, please refer to the [src/controllers/downloadController.js](src/controllers/downloadController.js) file.
+
+#### Step 3: Route Definitions
+
+Routes are defined in `src/routes/index.js`. This file maps URLs to controller functions.
+
+For implementation details, please refer to the [src/routes/index.js](src/routes/index.js) file.
+
+#### Step 4: Services
+
+Services contain the core business logic. The main service is `spotifyService.js` which handles communication with the spotdl container.
+
+For implementation details, please refer to the [src/services/spotifyService.js](src/services/spotifyService.js) file.
+
+#### Step 5: Utilities
+
+Utility functions are located in `src/utils/`. This includes file utilities and the new logger utility.
+
+For implementation details, please refer to the files in the [src/utils/](src/utils/) directory.
+
+#### Step 6: Express.js Application
 
 The Express.js server is implemented in `server.js`. This file contains all the logic for:
 
@@ -194,7 +259,7 @@ The Express.js server is implemented in `server.js`. This file contains all the 
 - Providing real-time status updates through Socket.IO
 
 For implementation details, please refer to the [server.js](server.js) file.
-### Step 6: HTML Templates
+### Step 7: HTML Templates
 
 The web interface consists of three main files in the `public/` directory:
 
@@ -275,27 +340,7 @@ docker compose exec webapp sh
 docker compose exec spotdl sh
 ```
 
-## Development
-
-### Local Development
-
-The webapp can be developed locally by running the Express.js server directly:
-
-```bash
-# Install dependencies
-npm install
-
-# Run the server in development mode
-npm run dev
-```
-
-Note that the spotdl container must be running for downloads to work. You can start it with:
-
-```bash
-docker compose up -d spotdl
-```
-
-### Stopping the Application
+## Stopping the Application
 
 ```bash
 # Stop containers

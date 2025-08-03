@@ -3,6 +3,7 @@ const fs = require('fs');
 const path = require('path');
 const http = require('http');
 const { Server } = require("socket.io");
+const logger = require('./utils/logger');
 
 const app = express();
 const server = http.createServer(app);
@@ -18,31 +19,40 @@ const io = new Server(server, {
 const port = config.port;
 const musicDir = '/usr/src/app/music';
 
-// Middleware
+/**
+ * Middleware setup
+ */
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.json());
 
-// Routes
+/**
+ * Routes setup
+ */
 const routes = require('./routes/index');
 app.use('/', routes(io));
 
-// Socket connection
+/**
+ * Socket connection handler
+ */
 io.on('connection', (socket) => {
-    console.log('Socket.IO client connected:', socket.id);
+    logger.info('Socket.IO client connected:', socket.id);
     const downloadId = socket.handshake.query.id;
     if (downloadId) {
-        console.log('Client joining room:', downloadId);
+        logger.info('Client joining room:', downloadId);
         socket.join(downloadId);
     } else {
-        console.log('Client connected without downloadId');
+        logger.info('Client connected without downloadId');
     }
     
     socket.on('disconnect', () => {
-        console.log('Socket.IO client disconnected:', socket.id);
+        logger.info('Socket.IO client disconnected:', socket.id);
     });
 });
 
+/**
+ * Server listener
+ */
 server.listen(port, () => {
-    console.log(`Web app listening at http://localhost:${port}`);
+    logger.info(`Web app listening at http://localhost:${port}`);
 });

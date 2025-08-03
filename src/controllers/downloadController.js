@@ -4,36 +4,51 @@ const path = require('path');
 const WebSocket = require('ws');
 const fetch = require('node-fetch');
 const config = require('../config');
+const logger = require('../utils/logger');
 
 const spotdlApiUrl = config.spotdlApiUrl;
 const musicDir = '/usr/src/app/music';
 
-// Handle download request
+/**
+ * Handle download request
+ * @param {object} req - Express request object
+ * @param {object} res - Express response object
+ * @param {object} io - Socket.IO server instance
+ * @returns {void}
+ */
 const handleDownload = async (req, res, io) => {
     const trackUrl = req.body.trackUrl;
     const downloadId = Date.now().toString();
 
-    console.log('Download request received for URL:', trackUrl);
-    console.log('Download ID:', downloadId);
+    logger.info('Download request received for URL:', trackUrl);
+    logger.info('Download ID:', downloadId);
 
     res.redirect(`/status?id=${downloadId}`);
 
     // Generate a client ID for the request
     const clientId = 'webapp-' + Date.now();
-    console.log('Generated client ID:', clientId);
+    logger.info('Generated client ID:', clientId);
     
     // Use the spotify service to handle the download
     const { downloadTrack } = require('../services/spotifyService');
     downloadTrack(trackUrl, clientId, io, downloadId);
 };
 
-// Get songs list
+/**
+ * Get songs list
+ * @param {object} req - Express request object
+ * @param {object} res - Express response object
+ * @returns {void}
+ */
 const getSongs = (req, res) => {
     const { getMp3Files } = require('../utils/fileUtils');
     
     getMp3Files(musicDir)
         .then(files => res.json(files))
-        .catch(err => res.status(500).send('Error reading music directory'));
+        .catch(err => {
+            logger.error('Error reading music directory:', err);
+            res.status(500).send('Error reading music directory');
+        });
 };
 
 module.exports = {
