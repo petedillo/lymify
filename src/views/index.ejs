@@ -12,11 +12,7 @@
         <%- include('partials/header') %>
         
         <main>
-            <form id="download-form" method="POST" action="/download">
-                <label for="track-url">Spotify Track URL:</label>
-                <input type="url" id="track-url" name="trackUrl" placeholder="https://open.spotify.com/track/..." required>
-                <button type="submit">Download</button>
-            </form>
+            <%- include('partials/form') %>
             
             <div id="message"></div>
             
@@ -26,36 +22,7 @@
             </ul>
         </main>
         
-        <script>
-            // Fetch and display songs
-            fetch('/api/songs')
-                .then(response => response.json())
-                .then(songs => {
-                    const songList = document.getElementById('song-list');
-                    songList.innerHTML = '';
-                    
-                    if (songs.length === 0) {
-                        const li = document.createElement('li');
-                        li.textContent = 'No songs downloaded yet';
-                        li.classList.add('placeholder');
-                        songList.appendChild(li);
-                    } else {
-                        songs.forEach(song => {
-                            const li = document.createElement('li');
-                            li.textContent = song;
-                            songList.appendChild(li);
-                        });
-                    }
-                })
-                .catch(error => {
-                    console.error('Error fetching songs:', error);
-                    const songList = document.getElementById('song-list');
-                    const li = document.createElement('li');
-                    li.textContent = 'Error loading songs';
-                    li.style.color = 'var(--soft-coral)';
-                    songList.appendChild(li);
-                });
-        </script>
+        <script src="/main.js"></script>
         
         <%- include('partials/footer') %>
     </div>
