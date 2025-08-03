@@ -18,7 +18,7 @@ const io = new Server(server, {
 });
 
 const port = config.port;
-const musicDir = '/usr/src/app/music';
+
 
 /**
  * Middleware setup
