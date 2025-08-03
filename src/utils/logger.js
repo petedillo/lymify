@@ -1,6 +1,7 @@
 /**
  * Logger utility for the application
  * Enabled in development mode but disabled in production
+ * @module logger
  */
 
 const config = require('../config');

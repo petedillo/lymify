@@ -1,4 +1,8 @@
-// Socket utility functions for handling connections and events
+/**
+ * Socket utility functions for handling connections and events
+ * @module socketUtils
+ */
+
 const logger = require('./logger');
 
 /**

@@ -1,4 +1,8 @@
-// Spotify service
+/**
+ * Spotify service for the Lymify application
+ * @module spotifyService
+ */
+
 const fetch = require('node-fetch');
 const WebSocket = require('ws');
 const config = require('../config');

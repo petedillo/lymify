@@ -1,4 +1,8 @@
-// Main routes
+/**
+ * Main routes for the Lymify application
+ * @module routes
+ */
+
 const express = require('express');
 const path = require('path');
 const fs = require('fs');
@@ -8,27 +12,30 @@ const router = express.Router();
 const musicDir = path.join(__dirname, '..', 'music');
 
 /**
- * Home page route
+ * GET / - Home page route
+ * Renders the index.ejs template
  */
 router.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, '..', 'public', 'index.html'));
+    res.render('index');
 });
 
 /**
  * Download route
+ * This route is defined in the module.exports function below
+ * to ensure the io instance is properly injected
  */
-// This route is defined in the module.exports function below
-// to ensure the io instance is properly injected
 
 /**
- * Status page route
+ * GET /status - Status page route
+ * Renders the status.ejs template
  */
 router.get('/status', (req, res) => {
-    res.sendFile(path.join(__dirname, '..', 'public', 'status.html'));
+    res.render('status');
 });
 
 /**
- * API route to get songs list
+ * GET /api/songs - API route to get songs list
+ * @returns {Array} List of downloaded songs
  */
 router.get('/api/songs', getSongs);
 

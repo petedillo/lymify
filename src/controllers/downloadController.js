@@ -1,4 +1,8 @@
-// Download controller
+/**
+ * Download controller for the Lymify application
+ * @module downloadController
+ */
+
 const fs = require('fs');
 const path = require('path');
 const WebSocket = require('ws');

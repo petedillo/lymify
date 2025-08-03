@@ -1,14 +1,29 @@
+/**
+ * Main server file for Lymify application
+ * @module server
+ */
+
 const express = require('express');
 const path = require('path');
 const http = require('http');
-const { Server } = require("socket.io");
+const { Server } = require('socket.io');
 const logger = require('./utils/logger');
 const { setupSocketHandlers } = require('./utils/socketUtils');
 
+// Initialize Express app
 const app = express();
+
+// Set EJS as the templating engine
+app.set('view engine', 'ejs');
+app.set('views', path.join(__dirname, 'views'));
+
+// Create HTTP server
 const server = http.createServer(app);
+
+// Load configuration
 const config = require('./config');
 
+// Initialize Socket.IO server
 const io = new Server(server, {
     cors: {
         origin: config.cors.origin,
@@ -16,8 +31,8 @@ const io = new Server(server, {
     }
 });
 
+// Set port from configuration
 const port = config.port;
-
 
 /**
  * Middleware setup
@@ -38,7 +53,7 @@ app.use('/', routes(io));
 setupSocketHandlers(io);
 
 /**
- * Server listener
+ * Start the server
  */
 server.listen(port, () => {
     logger.info(`Web app listening at http://localhost:${port}`);
