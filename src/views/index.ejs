@@ -5,30 +5,39 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Lymify - Spotify Downloader</title>
     <link rel="stylesheet" href="/style.css">
+    <link rel="icon" type="image/png" href="/favicon.png">
 </head>
 <body>
     <div class="container">
-        <h1>Lymify</h1>
-        <p style="text-align: center; color: var(--soft-gray); margin-bottom: 2em;">Download Spotify tracks with ease</p>
+        <%- include('partials/header') %>
         
-        <form action="/download" method="POST">
-            <input type="text" name="trackUrl" placeholder="Enter Spotify Track, Album, or Playlist URL" required>
-            <button type="submit">Download</button>
-        </form>
-
-        <h2>Downloaded Songs</h2>
-        <ul id="song-list"></ul>
-
+        <main>
+            <form id="download-form" method="POST" action="/download">
+                <label for="track-url">Spotify Track URL:</label>
+                <input type="url" id="track-url" name="trackUrl" placeholder="https://open.spotify.com/track/..." required>
+                <button type="submit">Download</button>
+            </form>
+            
+            <div id="message"></div>
+            
+            <h2>Your Songs</h2>
+            <ul id="song-list">
+                <li class="placeholder">Loading songs...</li>
+            </ul>
+        </main>
+        
         <script>
+            // Fetch and display songs
             fetch('/api/songs')
                 .then(response => response.json())
                 .then(songs => {
                     const songList = document.getElementById('song-list');
+                    songList.innerHTML = '';
+                    
                     if (songs.length === 0) {
                         const li = document.createElement('li');
                         li.textContent = 'No songs downloaded yet';
-                        li.style.color = 'var(--soft-gray)';
-                        li.style.fontStyle = 'italic';
+                        li.classList.add('placeholder');
                         songList.appendChild(li);
                     } else {
                         songs.forEach(song => {
@@ -48,9 +57,7 @@
                 });
         </script>
         
-        <footer>
-            <p>Powered by <a href="https://github.com/spotDL/spotify-downloader" target="_blank" rel="noopener noreferrer">spotdl</a></p>
-        </footer>
+        <%- include('partials/footer') %>
     </div>
 </body>
 </html>
