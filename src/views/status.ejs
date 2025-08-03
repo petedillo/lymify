@@ -7,100 +7,171 @@
     <link rel="stylesheet" href="/style.css">
 </head>
 <body>
-    <h1>Lymify - Download Status</h1>
-    <div id="status-updates"></div>
-    <a href="/">Back to Home</a>
-
-    <script src="/socket.io/socket.io.js"></script>
-    <script>
-        const urlParams = new URLSearchParams(window.location.search);
-        const downloadId = urlParams.get('id');
+    <div class="container">
+        <h1>Download Status</h1>
+        <a href="/" class="back-link">← Back to Home</a>
         
-        // Display download ID for debugging
-        const statusUpdates = document.getElementById('status-updates');
-        const debugInfo = document.createElement('p');
-        debugInfo.textContent = `Download ID: ${downloadId}`;
-        debugInfo.style.color = 'gray';
-        debugInfo.style.fontSize = '0.8em';
-        statusUpdates.appendChild(debugInfo);
+        <div id="progressContainer">
+            <div class="progress">
+                <div class="progress-bar" id="progressBar" style="width: 0%;"></div>
+            </div>
+            <div id="progressText">Initializing...</div>
+        </div>
         
-        // Add timestamp to messages
-        const addMessage = (message, type = 'info') => {
-            const p = document.createElement('p');
-            p.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+        <h2>Download Logs</h2>
+        <div id="status-updates"></div>
+        
+        <script src="/socket.io/socket.io.js"></script>
+        <script>
+            // Get download ID from URL
+            const urlParams = new URLSearchParams(window.location.search);
+            const downloadId = urlParams.get('id');
             
-            // Style based on message type
-            switch(type) {
-                case 'success':
-                    p.style.color = 'green';
-                    p.style.fontWeight = 'bold';
-                    break;
-                case 'error':
-                    p.style.color = 'red';
-                    p.style.fontWeight = 'bold';
-                    break;
-                case 'info':
-                default:
-                    p.style.color = 'black';
-                    break;
-            }
+            // Keep track of message counts for stacking
+            const messageCounts = {};
             
-            statusUpdates.appendChild(p);
-            
-            // Scroll to bottom to show latest updates
-            statusUpdates.scrollTop = statusUpdates.scrollHeight;
-        };
-        
-        // Connect to socket with better error handling
-        const socket = io({
-            query: { id: downloadId },
-            transports: ['websocket', 'polling'],
-            reconnection: true,
-            reconnectionAttempts: 5,
-            reconnectionDelay: 1000,
-            timeout: 20000
-        });
-
-        socket.on('connect', () => {
-            addMessage('Connected to server', 'success');
-        });
-
-        socket.on('connect_error', (error) => {
-            addMessage(`Connection error: ${error.message}`, 'error');
-        });
-
-        socket.on('disconnect', (reason) => {
-            addMessage(`Disconnected: ${reason}`, 'error');
-            
-            // If it's a transport close, try to reconnect
-            if (reason === 'transport close') {
-                addMessage('Attempting to reconnect...', 'info');
+            if (!downloadId) {
+                document.getElementById('status-updates').innerHTML = '<p class="error">Error: No download ID provided</p>';
+            } else {
+                // Connect to Socket.IO server with room ID as query parameter
+                const socket = io({
+                    query: {
+                        id: downloadId
+                    }
+                });
+                
+                // Listen for status updates
+                socket.on('statusUpdate', (data) => {
+                    const statusUpdates = document.getElementById('status-updates');
+                    
+                    // Format timestamp
+                    const now = new Date();
+                    const timestamp = `[${now.toLocaleTimeString()}]`;
+                    
+                    // Create message key for stacking
+                    const messageKey = `${data.message}`;
+                    
+                    // Check if this is a duplicate message
+                    if (messageCounts[messageKey]) {
+                        // Increment count
+                        messageCounts[messageKey].count++;
+                        
+                        // Update existing entry
+                        const existingEntry = messageCounts[messageKey].element;
+                        existingEntry.textContent = `${timestamp} ${data.message} (${messageCounts[messageKey].count})`;
+                        
+                        // Move to bottom
+                        statusUpdates.appendChild(existingEntry);
+                    } else {
+                        // Create new entry
+                        const newEntry = document.createElement('p');
+                        
+                        // Set message content
+                        newEntry.textContent = `${timestamp} ${data.message}`;
+                        
+                        // Add appropriate class based on message type
+                        if (data.type) {
+                            newEntry.classList.add(data.type);
+                            
+                            // Special handling for error messages
+                            if (data.type === 'error') {
+                                // Add error styling to progress container
+                                const progressContainer = document.getElementById('progressContainer');
+                                if (progressContainer) {
+                                    progressContainer.classList.add('error');
+                                }
+                                
+                                // Update progress text to show error
+                                const progressText = document.getElementById('progressText');
+                                if (progressText && data.message.includes('ERROR')) {
+                                    progressText.textContent = 'Download Failed';
+                                    
+                                    // Update progress bar to show error state
+                                    const progressBar = document.getElementById('progressBar');
+                                    if (progressBar) {
+                                        progressBar.style.background = 'var(--soft-coral)';
+                                    }
+                                }
+                            }
+                        } else {
+                            newEntry.classList.add('info');
+                        }
+                        
+                        // Add to updates container
+                        statusUpdates.appendChild(newEntry);
+                        
+                        // Track this message
+                        messageCounts[messageKey] = {
+                            element: newEntry,
+                            count: 1
+                        };
+                    }
+                    
+                    // Scroll to bottom
+                    statusUpdates.scrollTop = statusUpdates.scrollHeight;
+                    
+                    // Update progress if provided
+                    if (data.progress !== undefined) {
+                        const progressBar = document.getElementById('progressBar');
+                        const progressText = document.getElementById('progressText');
+                        progressBar.style.width = `${data.progress}%`;
+                        progressText.textContent = `${Math.round(data.progress)}%`;
+                        
+                        // Add special styling for different stages
+                        if (data.progress < 25) {
+                            progressText.textContent += ' - Connecting...';
+                        } else if (data.progress < 50) {
+                            progressText.textContent += ' - Downloading...';
+                        } else if (data.progress < 75) {
+                            progressText.textContent += ' - Converting...';
+                        } else if (data.progress < 100) {
+                            progressText.textContent += ' - Finalizing...';
+                        } else {
+                            progressText.textContent += ' - Complete!';
+                        }
+                    }
+                });
+                
+                // Handle connection errors
+                socket.on('connect_error', (error) => {
+                    const statusUpdates = document.getElementById('status-updates');
+                    const errorEntry = document.createElement('p');
+                    errorEntry.textContent = `[${new Date().toLocaleTimeString()}] Connection error: ${error.message}`;
+                    errorEntry.classList.add('error');
+                    statusUpdates.appendChild(errorEntry);
+                    statusUpdates.scrollTop = statusUpdates.scrollHeight;
+                });
+                
+                // Handle disconnection
+                socket.on('disconnect', (reason) => {
+                    const statusUpdates = document.getElementById('status-updates');
+                    const disconnectEntry = document.createElement('p');
+                    disconnectEntry.textContent = `[${new Date().toLocaleTimeString()}] Disconnected: ${reason}`;
+                    disconnectEntry.classList.add('error');
+                    statusUpdates.appendChild(disconnectEntry);
+                    statusUpdates.scrollTop = statusUpdates.scrollHeight;
+                });
+                
+                // Add initial connection message
+                const statusUpdates = document.getElementById('status-updates');
+                const connectEntry = document.createElement('p');
+                connectEntry.textContent = `[${new Date().toLocaleTimeString()}] Connected to status updates for download ${downloadId}`;
+                connectEntry.classList.add('success');
+                statusUpdates.appendChild(connectEntry);
+                statusUpdates.scrollTop = statusUpdates.scrollHeight;
+                
+                // Keep connection alive
+                setInterval(() => {
+                    if (socket.connected) {
+                        socket.emit('ping');
+                        console.debug('Sent ping to server');
+                    }
+                }, 30000);
             }
-        });
-
-        socket.on('statusUpdate', (data) => {
-            addMessage(data.message, data.type || 'info');
-        });
-        
-        socket.on('pong', () => {
-            // Received pong from server, connection is alive
-            console.debug('Received pong from server');
-        });
-        
-        // Add a fallback message if no updates come through
-        setTimeout(() => {
-            if (statusUpdates.children.length <= 2) { // Only debug info and download ID
-                addMessage('Waiting for status updates... (This may take a moment)', 'info');
-            }
-        }, 3000);
-        
-        // Keep connection alive
-        setInterval(() => {
-            if (socket.connected) {
-                socket.emit('ping');
-                console.debug('Sent ping to server');
-            }
-        }, 30000);
-    </script>
+        </script>
+        <footer>
+            <p>Powered by <a href="https://github.com/spotDL/spotify-downloader" target="_blank" rel="noopener noreferrer">spotdl</a></p>
+        </footer>
+    </div>
 </body>
 </html>

@@ -3,33 +3,54 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lymify</title>
+    <title>Lymify - Spotify Downloader</title>
     <link rel="stylesheet" href="/style.css">
 </head>
 <body>
-    <h1>Lymify</h1>
-    <form action="/download" method="POST">
-        <input type="text" name="trackUrl" placeholder="Enter Spotify Track URL" required>
-        <button type="submit">Download</button>
-    </form>
+    <div class="container">
+        <h1>Lymify</h1>
+        <p style="text-align: center; color: var(--soft-gray); margin-bottom: 2em;">Download Spotify tracks with ease</p>
+        
+        <form action="/download" method="POST">
+            <input type="text" name="trackUrl" placeholder="Enter Spotify Track, Album, or Playlist URL" required>
+            <button type="submit">Download</button>
+        </form>
 
-    <h2>Downloaded Songs</h2>
-    <ul id="song-list"></ul>
+        <h2>Downloaded Songs</h2>
+        <ul id="song-list"></ul>
 
-    <script>
-        fetch('/api/songs')
-            .then(response => response.json())
-            .then(songs => {
-                const songList = document.getElementById('song-list');
-                songs.forEach(song => {
+        <script>
+            fetch('/api/songs')
+                .then(response => response.json())
+                .then(songs => {
+                    const songList = document.getElementById('song-list');
+                    if (songs.length === 0) {
+                        const li = document.createElement('li');
+                        li.textContent = 'No songs downloaded yet';
+                        li.style.color = 'var(--soft-gray)';
+                        li.style.fontStyle = 'italic';
+                        songList.appendChild(li);
+                    } else {
+                        songs.forEach(song => {
+                            const li = document.createElement('li');
+                            li.textContent = song;
+                            songList.appendChild(li);
+                        });
+                    }
+                })
+                .catch(error => {
+                    console.error('Error fetching songs:', error);
+                    const songList = document.getElementById('song-list');
                     const li = document.createElement('li');
-                    li.textContent = song;
+                    li.textContent = 'Error loading songs';
+                    li.style.color = 'var(--soft-coral)';
                     songList.appendChild(li);
                 });
-            });
-    </script>
-    <footer>
-        <p>Powered by <a href="https://github.com/spotDL/spotify-downloader" target="_blank" rel="noopener noreferrer">spotdl</a></p>
-    </footer>
+        </script>
+        
+        <footer>
+            <p>Powered by <a href="https://github.com/spotDL/spotify-downloader" target="_blank" rel="noopener noreferrer">spotdl</a></p>
+        </footer>
+    </div>
 </body>
 </html>

@@ -41,7 +41,7 @@ const downloadTrack = async (trackUrl, clientId, io, downloadId) => {
       
       // Forward progress updates to the browser client
       if (progressData.progress !== undefined && progressData.message) {
-        emitStatusUpdate(io, downloadId, progressData.message);
+        emitStatusUpdate(io, downloadId, progressData.message, 'info', progressData.progress);
       }
       
       // Check if the download is complete

@@ -11,8 +11,9 @@ const logger = require('./logger');
  * @param {string} roomId - Room ID to emit to
  * @param {string} message - Status message to send
  * @param {string} type - Type of message (info, error, success)
+ * @param {number} progress - Progress percentage (optional)
  */
-const emitStatusUpdate = (io, roomId, message, type = 'info') => {
+const emitStatusUpdate = (io, roomId, message, type = 'info', progress = undefined) => {
   logger.debug('emitStatusUpdate called with:', { io: !!io, roomId, message, type });
   
   if (!io) {
@@ -35,7 +36,8 @@ const emitStatusUpdate = (io, roomId, message, type = 'info') => {
   const payload = {
     message,
     type,
-    timestamp: new Date().toISOString()
+    timestamp: new Date().toISOString(),
+    progress
   };
 
   logger.debug(`Emitting status update to room ${roomId}:`, payload);
