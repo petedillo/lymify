@@ -2,6 +2,8 @@
  * Tests for the logger utility
  */
 
+import { vi, beforeEach, afterEach, describe, test, expect } from 'vitest';
+
 const logger = require('../src/utils/logger');
 
 // Mock console methods
@@ -11,9 +13,9 @@ const originalError = console.error;
 
 beforeEach(() => {
   // Clear all mocks before each test
-  console.log = jest.fn();
-  console.warn = jest.fn();
-  console.error = jest.fn();
+  console.log = vi.fn();
+  console.warn = vi.fn();
+  console.error = vi.fn();
 });
 
 afterEach(() => {

@@ -1,5 +1,5 @@
 // Simple test file
-const request = require('supertest');
+import { describe, test, expect } from 'vitest';
 const fs = require('fs');
 
 // Placeholder for future tests
