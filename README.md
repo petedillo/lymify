@@ -34,8 +34,8 @@ This application consists of two Docker containers managed by `docker-compose.ym
 1. User visits the home page (`/`) to see a list of all currently downloaded songs
 2. User submits a Spotify track URL via a form to the `/download` endpoint
 3. The webapp container sends a request to the spotdl container's web API to start the download process
-4. The user is immediately redirected to a status page (`/status?id=:downloadId`) which connects to a WebSocket for real-time updates
-5. The status page displays real-time progress updates from the download process
+4. The user is immediately redirected to a status page (`/status?id=:downloadId`) which connects to a Socket.IO server for real-time updates
+5. The status page displays real-time progress updates from the download process using Socket.IO rooms to isolate updates per download session
 6. Downloaded files are saved to the shared `./music` directory
 
 ## Prerequisites
@@ -59,7 +59,8 @@ lymify/
 │   │   └── spotifyService.js      # Spotify download service
 │   ├── utils/               # Helper functions
 │   │   ├── fileUtils.js     # File utilities
-│   │   └── logger.js        # Logger utility
+│   │   ├── logger.js        # Logger utility
+│   │   └── socketUtils.js   # Socket.IO utility functions
 │   ├── public/              # Static files
 │   │   ├── css/             # CSS styles
 │   │   ├── js/              # JavaScript files
@@ -88,7 +89,7 @@ The application can be configured using the following environment variables. You
 | Variable         | Description                                     | Default                  |
 |------------------|-------------------------------------------------|--------------------------|
 | `NODE_ENV`       | The environment mode (development/production)   | `development`            |
-| `PORT`           | The port on which the web server will listen.   | `3000`                   |
+| `PORT`           | The port on which the web server will listen.   | `3300`                   |
 | `SPOTDL_API_URL` | The full URL for the spotDL container's API.    | `http://spotdl:8800`     |
 
 You can also create a `.env` file in the root directory based on the `.env.example` file to set these variables.
@@ -124,7 +125,7 @@ services:
       context: .
       dockerfile: docker/dev.Dockerfile
     ports:
-      - "3001:3000"
+      - "3300:3300"
     volumes:
       - ./music:/usr/src/app/music
       - /var/run/docker.sock:/var/run/docker.sock
@@ -142,7 +143,7 @@ services:
   lymify:
     image: petedillo.com/lymify:latest
     ports:
-      - "3001:3000"
+      - "3300:3300"
     volumes:
       - ./music:/usr/src/app/music
       - /var/run/docker.sock:/var/run/docker.sock
@@ -284,7 +285,7 @@ docker compose up --build
 ### Step 2: Access the Application
 
 1. Open your web browser
-2. Navigate to `http://localhost:3001`
+2. Navigate to `http://localhost:3300`
 3. Enter a Spotify track URL (e.g., `https://open.spotify.com/track/4iV5W9uYEdYUVa79Axb7Rh`)
 4. Click "Download Track"
 5. Monitor progress on the status page
