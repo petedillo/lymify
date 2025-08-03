@@ -4,6 +4,7 @@ const path = require('path');
 const http = require('http');
 const { Server } = require("socket.io");
 const logger = require('./utils/logger');
+const { setupSocketHandlers } = require('./utils/socketUtils');
 
 const app = express();
 const server = http.createServer(app);
@@ -35,20 +36,7 @@ app.use('/', routes(io));
 /**
  * Socket connection handler
  */
-io.on('connection', (socket) => {
-    logger.info('Socket.IO client connected:', socket.id);
-    const downloadId = socket.handshake.query.id;
-    if (downloadId) {
-        logger.info('Client joining room:', downloadId);
-        socket.join(downloadId);
-    } else {
-        logger.info('Client connected without downloadId');
-    }
-    
-    socket.on('disconnect', () => {
-        logger.info('Socket.IO client disconnected:', socket.id);
-    });
-});
+setupSocketHandlers(io);
 
 /**
  * Server listener

@@ -17,11 +17,8 @@ router.get('/', (req, res) => {
 /**
  * Download route
  */
-router.post('/download', (req, res) => {
-    // io will be injected via the module.exports function
-    // This is just a placeholder to avoid errors
-    handleDownload(req, res, null);
-});
+// This route is defined in the module.exports function below
+// to ensure the io instance is properly injected
 
 /**
  * Status page route

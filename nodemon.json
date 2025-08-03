@@ -7,7 +7,5 @@
   ],
   "ext": "js,json,html,css",
   "ignore": ["node_modules/*"],
-  "execMap": {
-    "js": "node --inspect=0.0.0.0:9229"
-  }
+  "exec": "node --inspect=0.0.0.0:9229 src/server.js"
 }

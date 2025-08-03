@@ -15,15 +15,92 @@
     <script>
         const urlParams = new URLSearchParams(window.location.search);
         const downloadId = urlParams.get('id');
-        const socket = io({ query: { id: downloadId } });
-
+        
+        // Display download ID for debugging
         const statusUpdates = document.getElementById('status-updates');
+        const debugInfo = document.createElement('p');
+        debugInfo.textContent = `Download ID: ${downloadId}`;
+        debugInfo.style.color = 'gray';
+        debugInfo.style.fontSize = '0.8em';
+        statusUpdates.appendChild(debugInfo);
+        
+        // Add timestamp to messages
+        const addMessage = (message, type = 'info') => {
+            const p = document.createElement('p');
+            p.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            
+            // Style based on message type
+            switch(type) {
+                case 'success':
+                    p.style.color = 'green';
+                    p.style.fontWeight = 'bold';
+                    break;
+                case 'error':
+                    p.style.color = 'red';
+                    p.style.fontWeight = 'bold';
+                    break;
+                case 'info':
+                default:
+                    p.style.color = 'black';
+                    break;
+            }
+            
+            statusUpdates.appendChild(p);
+            
+            // Scroll to bottom to show latest updates
+            statusUpdates.scrollTop = statusUpdates.scrollHeight;
+        };
+        
+        // Connect to socket with better error handling
+        const socket = io({
+            query: { id: downloadId },
+            transports: ['websocket', 'polling'],
+            reconnection: true,
+            reconnectionAttempts: 5,
+            reconnectionDelay: 1000,
+            timeout: 20000
+        });
+
+        socket.on('connect', () => {
+            addMessage('Connected to server', 'success');
+        });
+
+        socket.on('connect_error', (error) => {
+            addMessage(`Connection error: ${error.message}`, 'error');
+        });
+
+        socket.on('disconnect', (reason) => {
+            addMessage(`Disconnected: ${reason}`, 'error');
+            
+            // If it's a transport close, try to reconnect
+            if (reason === 'transport close') {
+                addMessage('Attempting to reconnect...', 'info');
+            }
+        });
 
         socket.on('statusUpdate', (data) => {
-            const p = document.createElement('p');
-            p.textContent = data.message;
-            statusUpdates.appendChild(p);
+            addMessage(data.message, data.type || 'info');
         });
+        
+        socket.on('pong', () => {
+            // Received pong from server, connection is alive
+            console.debug('Received pong from server');
+        });
+        
+        // Add a fallback message if no updates come through
+        setTimeout(() => {
+            if (statusUpdates.children.length <= 2) { // Only debug info and download ID
+                addMessage('Waiting for status updates... (This may take a moment)', 'info');
+            }
+        }, 3000);
+        
+        // Keep connection alive
+        setInterval(() => {
+            if (socket.connected) {
+                socket.emit('ping');
+                console.debug('Sent ping to server');
+            }
+        }, 30000);
     </script>
 </body>
 </html>

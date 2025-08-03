@@ -16,7 +16,6 @@ services:
       - /usr/src/app/node_modules
     depends_on:
       - spotdl
-    command: ["npx", "nodemon", "src/server.js"]
 
   spotdl:
     image: spotdl/spotify-downloader:latest

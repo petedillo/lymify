@@ -9,6 +9,7 @@ COPY package*.json ./
 RUN npm install
 COPY . .
 EXPOSE 3300
+CMD ["npx", "nodemon", "src/server.js"]
 
 # Production stage
 FROM base AS production
