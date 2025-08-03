@@ -1,5 +1,4 @@
 const express = require('express');
-const Docker = require('dockerode');
 const fs = require('fs');
 const path = require('path');
 const http = require('http');
