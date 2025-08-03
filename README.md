@@ -61,11 +61,19 @@ lymify/
 │   │   ├── fileUtils.js     # File utilities
 │   │   ├── logger.js        # Logger utility
 │   │   └── socketUtils.js   # Socket.IO utility functions
+│   ├── views/               # EJS templates
+│   │   ├── index.ejs        # Main page template
+│   │   ├── status.ejs       # Status page template
+│   │   └── partials/        # Template partials
+│   │       ├── header.ejs   # Header partial
+│   │       ├── footer.ejs   # Footer partial
+│   │       └── form.ejs     # Form partial
 │   ├── public/              # Static files
 │   │   ├── css/             # CSS styles
-│   │   ├── js/              # JavaScript files
-│   │   ├── index.html       # Main page
-│   │   └── status.html      # Download status page
+│   │   │   └── style.css    # Main stylesheet
+│   │   └── js/              # JavaScript files
+│   │       ├── main.js      # Main page client-side logic
+│   │       └── status.js    # Status page client-side logic
 │   └── server.js            # Express.js server
 ├── docker/                  # Docker configuration
 │   ├── dev.Dockerfile       # Development Dockerfile
@@ -234,7 +242,7 @@ For implementation details, please refer to the [src/controllers/downloadControl
 
 #### Step 3: Route Definitions
 
-Routes are defined in `src/routes/index.js`. This file maps URLs to controller functions.
+Routes are defined in `src/routes/index.js`. This file maps URLs to controller functions and uses EJS templating to render dynamic content.
 
 For implementation details, please refer to the [src/routes/index.js](src/routes/index.js) file.
 
@@ -260,15 +268,21 @@ The Express.js server is implemented in `server.js`. This file contains all the 
 - Providing real-time status updates through Socket.IO
 
 For implementation details, please refer to the [server.js](server.js) file.
-### Step 7: HTML Templates
+### Step 7: EJS Templates
 
-The web interface consists of three main files in the `public/` directory:
+The web interface uses EJS templating and consists of several files:
 
-- `index.html`: The main page that displays downloaded songs and provides the download form
-- `status.html`: The status page that shows real-time progress updates during downloads
-- `style.css`: The stylesheet that provides styling for the web interface
+- `views/index.ejs`: The main page that displays downloaded songs and provides the download form
+- `views/status.ejs`: The status page that shows real-time progress updates during downloads
+- `views/partials/`: Directory containing reusable template components
+  - `header.ejs`: Header section with title and description
+  - `footer.ejs`: Footer section
+  - `form.ejs`: Download form component
+- `public/css/style.css`: The stylesheet that provides styling for the web interface
+- `public/js/main.js`: Client-side JavaScript for the main page
+- `public/js/status.js`: Client-side JavaScript for the status page
 
-For implementation details, please refer to the files in the [public/](public/) directory.
+For implementation details, please refer to the files in the [src/views/](src/views/) and [src/public/](src/public/) directories.
 
 ## Running the Application
 
