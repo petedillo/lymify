@@ -73,15 +73,47 @@ mkdir -p music public
 
 ### Step 2: Create Docker Compose Configuration
 
-Create `docker-compose.yml`:
+You have two options for setting up the `docker-compose.yml` file.
+
+#### Option A: Build from Source
+
+Use this option if you plan to modify the code. Create a `docker-compose.yml` file with the following content:
 
 ```yaml
 version: '3.8'
 services:
-  webapp:
+  lymify:
     build:
       context: .
-      dockerfile: Dockerfile.webapp
+      dockerfile: Dockerfile
+    ports:
+      - "3001:3000"
+    volumes:
+      - ./music:/usr/src/app/music
+      - /var/run/docker.sock:/var/run/docker.sock
+    depends_on:
+      - spotdl
+
+  spotdl:
+    image: spotdl/spotify-downloader:latest
+    command: ["web", "--host", "0.0.0.0", "--port", "8800", "--keep-alive", "--web-use-output-dir"]
+    ports:
+      - "8800:8800"
+    volumes:
+      - ./music:/music
+      - ./.spotdl-cache:/app/.spotdl-cache
+    restart: unless-stopped
+```
+
+#### Option B: Use Pre-built Image
+
+For a quicker setup, you can use the pre-built image from the registry. Create `docker-compose.yml` with the following:
+
+```yaml
+version: '3.8'
+services:
+  lymify:
+    image: petedillo.com/lymify:latest
     ports:
       - "3001:3000"
     volumes:

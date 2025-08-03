@@ -9,8 +9,12 @@ const fetch = require('node-fetch');
 
 const app = express();
 const server = http.createServer(app);
-const wss = new WebSocket.Server({ server });
-const io = new Server(server);
+const io = new Server(server, {
+    cors: {
+        origin: "https://lymify.petedillo.com",
+        methods: ["GET", "POST"]
+    }
+});
 const docker = new Docker({ socketPath: '/var/run/docker.sock' });
 
 const port = 3000;
