@@ -17,7 +17,7 @@
     <ul id="song-list"></ul>
 
     <script>
-        fetch('/songs')
+        fetch('/api/songs')
             .then(response => response.json())
             .then(songs => {
                 const songList = document.getElementById('song-list');

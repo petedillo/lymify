@@ -48,16 +48,34 @@ This application consists of two Docker containers managed by `docker-compose.ym
 
 ```
 lymify/
-├── music/                     # Shared directory for downloaded songs
-├── public/
-│   ├── index.html           # Main page
-│   ├── status.html          # Download status page
-│   └── style.css            # CSS styles
-├── .spotdl-cache/             # Cache for spotdl
-├── Dockerfile.webapp        # Dockerfile for the webapp
-├── package.json             # Node.js dependencies
-├── server.js                # Express.js server
+├── src/                     # Source code
+│   ├── config/              # Configuration files
+│   │   └── index.js         # Application configuration
+│   ├── controllers/         # Route controllers
+│   │   └── downloadController.js  # Download controller
+│   ├── routes/              # Route definitions
+│   │   └── index.js         # Main routes
+│   ├── services/            # Business logic
+│   │   └── spotifyService.js      # Spotify download service
+│   ├── utils/               # Helper functions
+│   │   └── fileUtils.js     # File utilities
+│   ├── public/              # Static files
+│   │   ├── css/             # CSS styles
+│   │   ├── js/              # JavaScript files
+│   │   ├── index.html       # Main page
+│   │   └── status.html      # Download status page
+│   └── server.js            # Express.js server
+├── docker/                  # Docker configuration
+│   ├── dev.Dockerfile       # Development Dockerfile
+│   └── prod.Dockerfile      # Production Dockerfile
+├── music/                   # Shared directory for downloaded songs
+├── tests/                   # Test files
+│   └── server.test.js       # Server tests
+├── .spotdl-cache/           # Cache for spotdl
+├── .env.example             # Environment variables example
+├── .gitignore               # Git ignore file
 ├── docker-compose.yml       # Multi-container orchestration
+├── package.json             # Node.js dependencies
 └── README.md                # This file
 ```
 
@@ -67,8 +85,11 @@ The application can be configured using the following environment variables. You
 
 | Variable         | Description                                     | Default                  |
 |------------------|-------------------------------------------------|--------------------------|
-| `PORT`           | The port on which the web server will listen.     | `3000`                   |
-| `SPOTDL_API_URL` | The full URL for the spotDL container's API. | `http://spotdl:8800`     |
+| `NODE_ENV`       | The environment mode (development/production)   | `development`            |
+| `PORT`           | The port on which the web server will listen.   | `3000`                   |
+| `SPOTDL_API_URL` | The full URL for the spotDL container's API.    | `http://spotdl:8800`     |
+
+You can also create a `.env` file in the root directory based on the `.env.example` file to set these variables.
 
 ## Setup Instructions
 
@@ -94,20 +115,25 @@ services:
   lymify:
     build:
       context: .
-      dockerfile: Dockerfile
+      dockerfile: docker/dev.Dockerfile
+      target: development
     ports:
-      - "3001:3000"
+      - "3300:3300"
+    environment:
+      - NODE_ENV=development
+      - PORT=3300
+      - SPOTDL_API_URL=http://spotdl:8800
     volumes:
       - ./music:/usr/src/app/music
-      - /var/run/docker.sock:/var/run/docker.sock
+      - .:/usr/src/app
+      - /usr/src/app/node_modules
     depends_on:
       - spotdl
+    command: ["npx", "nodemon", "src/server.js"]
 
   spotdl:
     image: spotdl/spotify-downloader:latest
     command: ["web", "--host", "0.0.0.0", "--port", "8800", "--keep-alive", "--web-use-output-dir"]
-    ports:
-      - "8800:8800"
     volumes:
       - ./music:/music
       - ./.spotdl-cache:/app/.spotdl-cache
@@ -144,9 +170,9 @@ services:
 
 ### Step 3: Dockerfile for Webapp
 
-The Dockerfile for the webapp is defined in `Dockerfile.webapp`. This file sets up the Node.js environment and installs all necessary dependencies.
+The Dockerfile for the webapp is defined in `docker/dev.Dockerfile` and `docker/prod.Dockerfile`. These files set up the Node.js environment and install all necessary dependencies.
 
-For details, please refer to the [Dockerfile.webapp](Dockerfile.webapp) file.
+For details, please refer to the [docker/dev.Dockerfile](docker/dev.Dockerfile) and [docker/prod.Dockerfile](docker/prod.Dockerfile) files.
 ### Step 4: Package Configuration
 
 The package configuration is defined in `package.json`. This file includes all the necessary dependencies for the web application:
@@ -259,11 +285,15 @@ The webapp can be developed locally by running the Express.js server directly:
 # Install dependencies
 npm install
 
-# Run the server
-npm start
+# Run the server in development mode
+npm run dev
 ```
 
-Note that the spotdl container must be running for downloads to work.
+Note that the spotdl container must be running for downloads to work. You can start it with:
+
+```bash
+docker compose up -d spotdl
+```
 
 ### Stopping the Application
 
@@ -286,7 +316,7 @@ MIT License - feel free to modify and distribute as needed.
    docker compose up -d
    ```
 
-2. Access the web interface at http://localhost:3001
+2. Access the web interface at http://localhost:3300
 
 3. Enter a Spotify track URL in the form and click "Download Track"
 

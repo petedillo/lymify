@@ -2,7 +2,7 @@ services:
   lymify:
     build:
       context: .
-      dockerfile: Dockerfile
+      dockerfile: docker/dev.Dockerfile
       target: development
     ports:
       - "3300:3300"
@@ -16,7 +16,7 @@ services:
       - /usr/src/app/node_modules
     depends_on:
       - spotdl
-    command: ["npx", "nodemon", "server.js"]
+    command: ["npx", "nodemon", "src/server.js"]
 
   spotdl:
     image: spotdl/spotify-downloader:latest
