@@ -16,4 +16,4 @@ COPY package*.json ./
 RUN npm install --only=production
 COPY . .
 EXPOSE 3300
-CMD ["node", "server.js"]
+CMD ["node", "src/server.js"]

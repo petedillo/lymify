@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lymify - Spotify Downloader</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="icon" type="image/png" href="/favicon.png">
+</head>
+<body>
+    <div class="container">
+        <%- include('partials/header') %>
+        
+        <main>
+            <%- include('partials/form') %>
+            
+            <div id="message"></div>
+            
+            <h2>Your Songs</h2>
+            <ul id="song-list">
+                <li class="placeholder">Loading songs...</li>
+            </ul>
+        </main>
+        
+        <script src="/js/main.js"></script>
+        
+        <%- include('partials/footer') %>
+    </div>
+</body>
+</html>

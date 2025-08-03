@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lymify - Download Status</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="icon" type="image/png" href="/favicon.png">
+</head>
+<body>
+    <div class="container">
+        <%- include('partials/header') %>
+        
+        <main>
+            <h1>Download Status</h1>
+            <a href="/" class="back-link">← Back to Home</a>
+            
+            <div id="progressContainer">
+                <div class="progress">
+                    <div class="progress-bar" id="progressBar" style="width: 0%;"></div>
+                </div>
+                <div id="progressText">Initializing...</div>
+            </div>
+            
+            <h2>Download Logs</h2>
+            <div id="status-updates"></div>
+            
+            <script src="/socket.io/socket.io.js"></script>
+            <script src="/js/status.js"></script>
+        </main>
+        
+        <%- include('partials/footer') %>
+    </div>
+</body>
+</html>
